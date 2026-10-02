@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>16人格·心智阶位测评</title>
+<style>
+:root{
+  --bg:#f2ede3;--bg-soft:#f7f3eb;--card:#fbf8f2;--card-hover:#fdfbf6;
+  --ink:#2e2a1f;--ink-2:#5a5445;--ink-3:#8a8270;--ink-4:#b0a890;
+  --green:#4a8c6a;--green-2:#5a9c7a;--green-3:#7ab896;--green-soft:#e8f0ea;
+  --gold:#c9a050;--gold-2:#e0a030;--gold-soft:#f5e6d0;
+  --rose:#d4756a;
+  --radius:20px;--radius-sm:14px;--radius-xs:10px;
+  --shadow-sm:0 1px 3px rgba(46,42,31,.04),0 1px 2px rgba(46,42,31,.03);
+  --shadow:0 4px 24px rgba(46,42,31,.06),0 1px 4px rgba(46,42,31,.04);
+  --shadow-lg:0 12px 48px rgba(46,42,31,.1),0 4px 12px rgba(46,42,31,.06);
+  --ease:cubic-bezier(.22,1,.36,1);--ease-out:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+.page{display:none;min-height:100vh;position:relative;z-index:1}
+.page.active{display:block;animation:pageIn .6s var(--ease-out)}
+.welcome.active{display:flex}
+.mbti-page.active{display:flex}
+.quiz-page.active{display:flex}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardRise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes qIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes arcDraw{to{stroke-dashoffset:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;font-size:16px;font-weight:600;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all .35s var(--ease);overflow:hidden;letter-spacing:.5px}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.15),transparent);opacity:0;transition:opacity .3s}
+.btn:hover::after{opacity:1}
+.btn-primary{background:linear-gradient(135deg,var(--green-2),var(--green));color:white;box-shadow:0 6px 24px rgba(74,140,106,.3),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(74,140,106,.38)}
+.btn-primary:active{transform:translateY(0) scale(.98)}
+.btn-ghost{background:rgba(255,255,255,.6);color:var(--green);border:1px solid rgba(74,140,106,.2);backdrop-filter:blur(10px)}
+.btn-ghost:hover{background:rgba(255,255,255,.85);border-color:rgba(74,140,106,.35);transform:translateY(-1px)}
+.btn-full{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* 欢迎页 */
+.welcome{min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px 60px;background:radial-gradient(ellipse at 50% 0%,#e8e0d0 0%,var(--bg) 55%)}
+.welcome-orb{position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(90,156,122,.12),transparent 70%);top:-80px;left:50%;transform:translateX(-50%);pointer-events:none;animation:orbFloat 8s ease-in-out infinite}
+@keyframes orbFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(20px)}}
+.welcome-icon{position:relative;width:76px;height:76px;border-radius:24px;background:linear-gradient(145deg,var(--green-2),var(--green));display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 12px 36px rgba(74,140,106,.35),inset 0 1px 0 rgba(255,255,255,.25);animation:cardRise .8s var(--ease-out) .1s both}
+.welcome-icon svg{width:36px;height:36px;color:white}
+.welcome-title{font-size:28px;font-weight:700;color:var(--ink);margin-bottom:10px;letter-spacing:3px;text-align:center;animation:cardRise .8s var(--ease-out) .2s both}
+.welcome-title em{font-style:normal;background:linear-gradient(135deg,var(--green),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.welcome-sub{font-size:14px;color:var(--ink-3);margin-bottom:32px;text-align:center;line-height:1.8;max-width:320px;animation:cardRise .8s var(--ease-out) .3s both}
+.welcome-card{width:100%;max-width:380px;background:rgba(255,255,255,.55);backdrop-filter:blur(20px);border-radius:var(--radius);padding:24px;border:1px solid rgba(255,255,255,.7);box-shadow:var(--shadow);animation:cardRise .8s var(--ease-out) .4s both}
+.welcome-card-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(46,42,31,.06)}
+.welcome-card-head svg{width:20px;height:20px;color:var(--green)}
+.welcome-card-head span{font-size:15px;font-weight:600;color:var(--green-2)}
+.info-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(46,42,31,.05);font-size:14px;color:var(--ink-2);line-height:1.5;transition:padding-left .3s}
+.info-row:last-child{border-bottom:none}
+.info-row:hover{padding-left:4px}
+.info-row svg{width:18px;height:18px;color:var(--ink-4);flex-shrink:0;transition:color .3s}
+.info-row:hover svg{color:var(--green-2)}
+.welcome-actions{width:100%;max-width:380px;margin-top:20px;display:flex;flex-direction:column;gap:10px;animation:cardRise .8s var(--ease-out) .5s both}
+
+/* 授权码弹窗 */
+.modal-overlay{position:fixed;inset:0;background:rgba(30,26,20,.45);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;opacity:0;transition:opacity .35s var(--ease)}
+.modal-overlay.active{display:flex;opacity:1}
+.modal{background:var(--card);border-radius:24px;padding:32px 26px;width:100%;max-width:360px;text-align:center;box-shadow:var(--shadow-lg);transform:translateY(20px) scale(.96);transition:transform .4s var(--ease-out);position:relative;overflow:hidden}
+.modal-overlay.active .modal{transform:translateY(0) scale(1)}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green-3),var(--green),var(--gold))}
+.modal-icon{width:58px;height:58px;border-radius:18px;background:linear-gradient(145deg,var(--green-2),var(--green));display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 8px 24px rgba(74,140,106,.3)}
+.modal-icon svg{width:26px;height:26px;color:white}
+.modal h3{font-size:19px;font-weight:700;margin-bottom:6px;color:var(--ink)}
+.modal p{font-size:13px;color:var(--ink-3);margin-bottom:22px;line-height:1.6}
+.code-single{position:relative;margin-bottom:14px}
+.code-single input{width:100%;padding:16px 18px 16px 48px;background:var(--bg-soft);border:2px solid rgba(46,42,31,.08);border-radius:var(--radius-sm);font-size:20px;font-weight:700;color:var(--ink);outline:none;font-family:'SF Mono','JetBrains Mono','Courier New',monospace;letter-spacing:4px;text-align:center;transition:all .3s var(--ease);text-transform:uppercase}
+.code-single input:focus{border-color:var(--green-2);background:white;box-shadow:0 0 0 4px rgba(74,140,106,.1)}
+.code-single input::placeholder{color:var(--ink-4);font-weight:400;letter-spacing:2px;font-size:15px}
+.code-single .lock-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-4);transition:color .3s}
+.code-single input:focus ~ .lock-icon{color:var(--green-2)}
+.code-hint{font-size:12px;color:var(--ink-4);margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:6px}
+.code-hint svg{width:14px;height:14px}
+.modal-error{color:var(--rose);font-size:13px;margin-bottom:12px;min-height:18px;display:flex;align-items:center;justify-content:center;gap:6px}
+.modal-error.show{animation:shake .4s}
+
+/* MBTI选择页 */
+.mbti-page{min-height:100vh;padding:48px 20px 40px;max-width:480px;margin:0 auto;flex-direction:column}
+.mbti-head{text-align:center;margin-bottom:28px}
+.mbti-head h2{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:1px}
+.mbti-head p{font-size:14px;color:var(--ink-3);line-height:1.6}
+.mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
+.mbti-btn{padding:16px 4px;background:rgba(255,255,255,.6);border:2px solid rgba(46,42,31,.07);border-radius:var(--radius-xs);font-size:15px;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .3s var(--ease);text-align:center;position:relative;overflow:hidden}
+.mbti-btn:hover{border-color:rgba(74,140,106,.3);background:rgba(255,255,255,.85);transform:translateY(-2px)}
+.mbti-btn.selected{background:linear-gradient(145deg,var(--green-2),var(--green));color:white;border-color:transparent;box-shadow:0 6px 20px rgba(74,140,106,.3);transform:translateY(-2px)}
+.mbti-btn:active{transform:scale(.95)!important}
+.mbti-start{margin-top:auto}
+
+/* 答题页 */
+.quiz-page{min-height:100vh;padding:20px 16px 40px;max-width:520px;margin:0 auto;flex-direction:column}
+.quiz-top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.quiz-type{font-size:13px;font-weight:700;color:var(--green);background:var(--green-soft);padding:6px 14px;border-radius:999px;letter-spacing:1px;white-space:nowrap}
+.quiz-progress-wrap{flex:1}
+.quiz-progress{height:8px;background:rgba(46,42,31,.06);border-radius:4px;overflow:hidden;position:relative}
+.quiz-progress-bar{height:100%;background:linear-gradient(90deg,var(--green-3),var(--green));border-radius:4px;transition:width .5s var(--ease);position:relative}
+.quiz-count{font-size:13px;color:var(--ink-3);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.question-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}
+.question-card{background:var(--card);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;box-shadow:var(--shadow);position:relative;overflow:hidden;animation:qIn .5s var(--ease-out)}
+.question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green-3),var(--green))}
+.question-num{font-size:12px;color:var(--ink-4);margin-bottom:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.question-text{font-size:18px;line-height:1.8;color:var(--ink);font-weight:500}
+.options{display:flex;flex-direction:column;gap:10px}
+.option-btn{padding:16px 18px;background:var(--card);border:2px solid rgba(46,42,31,.07);border-radius:var(--radius-sm);font-size:15px;color:var(--ink-2);cursor:pointer;transition:all .3s var(--ease);text-align:left;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.option-btn:hover{border-color:rgba(74,140,106,.25);background:var(--card-hover);transform:translateX(4px)}
+.option-btn.selected{background:var(--green-soft);border-color:var(--green-2);color:var(--green);font-weight:600;transform:translateX(4px)}
+.option-btn:active{transform:scale(.98)}
+.option-dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(46,42,31,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:var(--ink-4);transition:all .3s var(--ease)}
+.option-btn.selected .option-dot{background:var(--green);border-color:var(--green);color:white;transform:scale(1.1)}
+
+/* 报告页 */
+.report-page{background:var(--bg);padding-bottom:48px}
+.report-container{max-width:480px;margin:0 auto}
+
+/* Hero区域 */
+.report-hero{background:linear-gradient(180deg,#d4e8dc 0%,#e0ede4 40%,#e8f0ea 70%,var(--bg) 100%);padding:48px 20px 36px;position:relative;overflow:hidden;min-height:420px;display:flex;flex-direction:column;align-items:center}
+.report-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(90,156,122,.1),transparent 70%);pointer-events:none}
+.hero-title-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:28px;width:100%}
+.hero-line{flex:1;max-width:80px;height:2px;background:linear-gradient(90deg,transparent,rgba(74,140,106,.4))}
+.hero-line.right{background:linear-gradient(90deg,rgba(74,140,106,.4),transparent)}
+.hero-title{font-size:22px;font-weight:600;color:var(--green);letter-spacing:8px;text-align:center}
+.hero-stage-badge{position:absolute;top:50px;right:24px;width:88px;height:88px;border-radius:50%;border:3px solid var(--gold-2);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,.5);backdrop-filter:blur(4px);box-shadow:0 4px 16px rgba(201,160,80,.2)}
+.hero-stage-name{font-size:18px;font-weight:700;color:var(--gold);line-height:1}
+.hero-stage-sub{font-size:11px;color:var(--gold);margin-top:4px;letter-spacing:1px}
+.hero-mbti{font-size:72px;font-weight:800;color:var(--green);letter-spacing:8px;margin:20px 0 12px;font-family:'SF Mono','JetBrains Mono',monospace;opacity:0;animation:heroFadeIn .8s var(--ease-out) .2s forwards;text-shadow:0 2px 12px rgba(74,140,106,.15)}
+@keyframes heroFadeIn{from{opacity:0;transform:translateY(20px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.hero-persona-line{width:40px;height:3px;background:linear-gradient(90deg,var(--green-3),var(--green));border-radius:2px;margin-bottom:14px}
+.hero-persona{font-size:28px;font-weight:700;color:var(--ink);margin-bottom:28px;letter-spacing:2px;opacity:0;animation:heroFadeIn .8s var(--ease-out) .4s forwards}
+.hero-score-card{background:var(--card);border-radius:20px;padding:22px 36px;box-shadow:0 8px 32px rgba(46,42,31,.1);display:flex;align-items:center;gap:12px;opacity:0;animation:heroFadeIn .8s var(--ease-out) .6s forwards;border:1px solid rgba(255,255,255,.8)}
+.hero-score-label{font-size:16px;color:var(--ink-3);font-weight:500}
+.hero-score-value{font-size:48px;font-weight:800;color:var(--green);line-height:1;font-variant-numeric:tabular-nums}
+.hero-score-total{font-size:20px;color:var(--ink-4);font-weight:500;margin-top:18px}
+.archive-card{background:linear-gradient(160deg,var(--card),#f5f0e5);border-radius:0 0 28px 28px;padding:36px 24px 28px;text-align:center;box-shadow:0 8px 32px rgba(46,42,31,.08);margin-bottom:18px;position:relative;overflow:hidden}
+.archive-card::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:120px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.archive-label{font-size:11px;color:var(--ink-4);letter-spacing:3px;margin-bottom:8px;text-transform:uppercase}
+.archive-id{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:2px;font-family:'SF Mono','JetBrains Mono','Courier New',monospace;font-variant-numeric:tabular-nums}
+.archive-divider{width:50px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-2),transparent);margin:18px auto}
+.archive-date-label{font-size:12px;color:var(--ink-4);margin-bottom:4px;letter-spacing:1px}
+.archive-date{font-size:17px;font-weight:600;color:var(--ink-2)}
+
+.r-card{background:var(--card);border-radius:var(--radius);padding:26px 22px;margin:0 12px 16px;box-shadow:var(--shadow);opacity:0;transform:translateY(24px);animation:cardRise .7s var(--ease-out) forwards}
+.r-card-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.r-card-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,var(--green-soft),#dcebe0);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.r-card-icon svg{width:20px;height:20px;color:var(--green)}
+.r-card-title{font-size:21px;font-weight:700;color:var(--ink);letter-spacing:.5px}
+.r-card-sub{font-size:13px;color:var(--ink-3);margin:4px 0 20px 50px}
+
+.persona-item{background:var(--bg-soft);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:12px;transition:all .3s var(--ease);border:1px solid rgba(46,42,31,.03)}
+.persona-item:hover{background:#fdfaf3;transform:translateX(3px)}
+.persona-item-label{font-size:12px;color:var(--ink-3);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:.5px}
+.persona-item-label svg{width:15px;height:15px}
+.persona-item-value{font-size:19px;font-weight:700;color:var(--ink)}
+.trait-tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.trait-tag{padding:7px 16px;background:linear-gradient(135deg,var(--green-soft),#dcebe0);border-radius:999px;font-size:13px;font-weight:600;color:var(--green);border:1px solid rgba(74,140,106,.12);transition:all .3s}
+.trait-tag:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(74,140,106,.15)}
+.quote-box{background:linear-gradient(135deg,var(--bg-soft),#f8f4ea);border-radius:var(--radius-sm);padding:22px 20px;border-left:3px solid var(--green-2);margin-top:10px;position:relative}
+.quote-mark{font-size:42px;color:rgba(74,140,106,.12);font-family:Georgia,serif;line-height:1;position:absolute;top:8px;left:14px;font-weight:700}
+.quote-text{font-size:16px;line-height:1.9;color:var(--ink-2);text-align:center;font-style:italic;padding:8px 16px;position:relative;z-index:1}
+.quote-author{font-size:12px;color:var(--ink-3);text-align:right;margin-top:12px;letter-spacing:.5px}
+
+.gauge-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gauge-grid .gauge-card:last-child{grid-column:1/-1;max-width:55%;margin:0 auto}
+.gauge-card{background:var(--bg-soft);border-radius:var(--radius-sm);padding:18px 12px;text-align:center;transition:all .3s var(--ease);border:1px solid rgba(46,42,31,.03)}
+.gauge-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(46,42,31,.06)}
+.gauge-svg{width:100%;max-width:130px;height:75px;margin:0 auto;display:block}
+.gauge-value{font-size:26px;font-weight:700;color:var(--ink);margin-top:-2px;font-variant-numeric:tabular-nums}
+.gauge-value span{font-size:14px;color:var(--ink-3);font-weight:500}
+.gauge-label{font-size:13px;color:var(--ink-2);margin:6px 0 8px;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:600}
+.gauge-label svg{width:15px;height:15px;color:var(--green-2)}
+.gauge-status{display:inline-block;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.5px}
+.status-developing{background:rgba(176,168,144,.15);color:var(--ink-3)}
+.status-growing{background:var(--gold-soft);color:#b8860b}
+.status-integrated{background:var(--green-soft);color:var(--green)}
+.gauge-legend{display:flex;justify-content:center;gap:16px;margin-top:18px;font-size:12px;color:var(--ink-3);flex-wrap:wrap}
+.gauge-legend span{display:flex;align-items:center;gap:5px}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+.stage-badge{float:right;padding:7px 18px;background:linear-gradient(135deg,var(--gold-soft),#f0dcc0);border-radius:999px;font-size:14px;font-weight:700;color:#b8860b;letter-spacing:1px}
+.integration-bar{background:var(--bg-soft);border-radius:var(--radius-sm);padding:18px;margin-bottom:16px}
+.integration-label{font-size:13px;color:var(--ink-3);margin-bottom:12px;letter-spacing:.5px}
+.integration-track{height:34px;background:rgba(46,42,31,.05);border-radius:17px;position:relative;overflow:hidden}
+.integration-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2));border-radius:17px;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;color:white;font-weight:700;font-size:15px;width:0;transition:width 1.5s var(--ease-out);font-variant-numeric:tabular-nums;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.integration-markers{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--ink-4);letter-spacing:.5px}
+.integration-markers span.active{color:var(--green);font-weight:700}
+.diagnosis-item{background:var(--bg-soft);border-radius:var(--radius-sm);padding:18px;margin-bottom:12px;transition:all .3s}
+.diagnosis-item:hover{background:#fdfaf3}
+.diagnosis-item-title{font-size:16px;font-weight:700;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.diagnosis-item-title svg{width:18px;height:18px}
+.diagnosis-item-text{font-size:14px;line-height:1.85;color:var(--ink-2)}
+.diagnosis-item-text .highlight{color:var(--green);font-weight:600}
+
+.rx-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.rx-symbol{font-size:44px;font-weight:700;color:#8b6914;line-height:1;font-family:Georgia,serif;background:linear-gradient(135deg,#a07820,#8b6914);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.rx-title-group h2{font-size:23px;font-weight:700;color:var(--ink);letter-spacing:.5px}
+.rx-title-group p{font-size:13px;color:var(--ink-3);font-family:'SF Mono','Courier New',monospace;margin-top:2px}
+.rx-info{background:var(--bg-soft);border-radius:var(--radius-sm);padding:18px;text-align:center;margin-bottom:20px;border:1px solid rgba(46,42,31,.04)}
+.rx-info-row{font-size:14px;color:var(--ink-3);margin:6px 0;display:flex;align-items:center;justify-content:center;gap:8px}
+.rx-info-row strong{font-size:20px;color:var(--ink);font-family:'SF Mono',monospace}
+.rx-info-divider{width:36px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-2),transparent);margin:12px auto}
+.rx-section{margin-bottom:20px;padding-left:14px;border-left:2px dashed rgba(201,160,80,.25)}
+.rx-section-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.rx-section-title svg{width:18px;height:18px}
+.rx-section-text{font-size:14px;line-height:1.85;color:var(--ink-2)}
+.rx-section-text .highlight{color:var(--green);font-weight:600}
+.rx-blindspot{background:linear-gradient(135deg,#fdf6e8,#faf0dc);border-radius:var(--radius-xs);padding:14px 16px;border-left:3px solid var(--gold-2);margin-top:8px}
+.rx-blindspot .highlight{color:#b8860b}
+.action-list{list-style:none;padding:0}
+.action-list li{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px dashed rgba(46,42,31,.06);font-size:14px;color:var(--ink-2);line-height:1.7}
+.action-list li:last-child{border-bottom:none}
+.action-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,var(--green-2),var(--green));color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;box-shadow:0 3px 10px rgba(74,140,106,.25)}
+.rx-special{background:linear-gradient(135deg,#f0f7f2,#eaf3ec);border-radius:var(--radius-sm);padding:16px;margin-top:8px;border:1px dashed rgba(74,140,106,.2)}
+.rx-special-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+
+.compass-section{margin-bottom:20px}
+.compass-section-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.compass-section-title svg{width:18px;height:18px;color:var(--green-2)}
+.career-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.career-item{background:var(--bg-soft);border-radius:var(--radius-xs);padding:15px;text-align:center;font-size:14px;font-weight:600;color:var(--ink-2);border:1px solid rgba(46,42,31,.04);transition:all .3s var(--ease)}
+.career-item:hover{background:var(--green-soft);color:var(--green);transform:translateY(-2px);border-color:rgba(74,140,106,.15)}
+.compat-item{margin-bottom:14px}
+.compat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.compat-type{font-size:15px;font-weight:700;color:var(--green);font-family:'SF Mono',monospace;letter-spacing:1px}
+.compat-percent{font-size:17px;font-weight:700;color:var(--rose);font-variant-numeric:tabular-nums}
+.compat-bar{height:12px;background:rgba(46,42,31,.05);border-radius:6px;overflow:hidden}
+.compat-fill{height:100%;background:linear-gradient(90deg,#f0a0a0,#e88080);border-radius:6px;width:0;transition:width 1.2s var(--ease-out)}
+
+.report-footer{margin:0 12px;background:linear-gradient(160deg,var(--card),#f5f0e5);border-radius:var(--radius);padding:24px 20px;border:1px dashed rgba(201,160,80,.3);opacity:0;animation:cardRise .7s var(--ease-out) 1s forwards}
+.disclaimer{font-size:12px;line-height:1.9;color:var(--ink-3);text-align:center;margin-bottom:20px}
+.footer-archive{display:flex;justify-content:space-around;text-align:center;margin-bottom:20px;padding:0 10px}
+.footer-archive-item .label{font-size:11px;color:var(--ink-4);margin-bottom:4px;letter-spacing:1px}
+.footer-archive-item .value{font-size:14px;font-weight:700;color:var(--ink-2);font-family:'SF Mono',monospace}
+.footer-divider{width:1px;background:rgba(46,42,31,.08)}
+.report-actions{display:flex;gap:10px}
+.report-btn{flex:1;padding:14px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s var(--ease)}
+.report-btn-outline{background:white;color:var(--ink-2);border:1px solid rgba(46,42,31,.1)}
+.report-btn-outline:hover{border-color:var(--green-2);color:var(--green);transform:translateY(-1px)}
+.report-btn-primary{background:linear-gradient(135deg,var(--green-2),var(--green));color:white;box-shadow:0 4px 16px rgba(74,140,106,.3)}
+.report-btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,140,106,.38)}
+.report-btn svg{width:17px;height:17px}
+.powered-by{text-align:center;font-size:11px;color:var(--ink-4);margin-top:16px;letter-spacing:1px}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(242,237,227,.92);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:2000;flex-direction:column}
+.loading-overlay.active{display:flex}
+.loading-ring{width:56px;height:56px;border-radius:50%;border:3px solid rgba(74,140,106,.15);border-top-color:var(--green-2);animation:spin 1s linear infinite;margin-bottom:18px;position:relative}
+.loading-ring::after{content:'';position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(74,140,106,.1);border-bottom-color:var(--gold-2);animation:spin 1.5s linear infinite reverse}
+.loading-text{font-size:15px;color:var(--ink-2);font-weight:500;letter-spacing:.5px}
+
+/* 图片预览弹窗 */
+.img-preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:3000;flex-direction:column;padding:20px}
+.img-preview-overlay.active{display:flex}
+.img-preview-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+.img-preview-img{max-width:100%;max-height:75vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.img-preview-tip{margin-top:16px;color:rgba(255,255,255,.8);font-size:14px;text-align:center;line-height:1.6}
+.img-preview-tip strong{color:#ffd700;font-weight:600}
+
+@media(max-width:360px){
+  .welcome-title{font-size:24px}
+  .mbti-grid{gap:8px}
+  .mbti-btn{padding:14px 2px;font-size:14px}
+  .r-card{padding:22px 18px;margin:0 10px 14px}
+  .gauge-value{font-size:22px}
+}
+@media(min-width:768px){
+  .report-container{max-width:520px}
+  .welcome-card{max-width:420px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div id="page-welcome" class="page welcome active">
+  <div class="welcome-orb"></div>
+  <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round"/></svg></div>
+  <div class="welcome-title">16人格·<em>心智阶位</em>测评</div>
+  <div class="welcome-sub">探索你的心智发展阶段<br>解锁专属成长处方与人生罗盘</div>
+  <div class="welcome-card">
+    <div class="welcome-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>测评须知</span></div>
+    <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>共 65 道题，约需 15-20 分钟</div>
+    <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>需已知自己的 MBTI 人格类型</div>
+    <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>五维心智发展指数深度评估</div>
+    <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>四阶位定位：未觉醒 → 初阶 → 中阶 → 高阶</div>
+  </div>
+  <div class="welcome-actions">
+    <button class="btn btn-primary btn-full" onclick="showCodeModal(false)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polygon points="5 3 19 12 5 21 5 3"/></svg>开始测评</button>
+    <button class="btn btn-ghost btn-full" onclick="showCodeModal(true)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>已有授权码？查看我的报告</button>
+  </div>
+</div>
+
+<div id="codeModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <h3 id="modalTitle">请输入授权码</h3>
+    <p id="modalDesc">授权码已通过订单消息发送给您<br>支持直接粘贴，8位字符</p>
+    <div class="code-single">
+      <input type="text" id="codeInput" maxlength="8" placeholder="XXXXXXXX" autocomplete="off" spellcheck="false">
+      <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="code-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>可长按输入框粘贴授权码</div>
+    <div class="modal-error" id="codeError"></div>
+    <button class="btn btn-primary btn-full" onclick="verifyCode()">确认授权码</button>
+  </div>
+</div>
+
+<div id="page-mbti" class="page mbti-page">
+  <div class="mbti-head"><h2>选择你的 MBTI 类型</h2><p>如果你还不知道自己的类型<br>请先完成标准 MBTI 测试</p></div>
+  <div class="mbti-grid" id="mbtiGrid"></div>
+  <div class="mbti-start"><button class="btn btn-primary btn-full" id="startQuizBtn" disabled onclick="startQuiz()">开始答题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button></div>
+</div>
+
+<div id="page-quiz" class="page quiz-page">
+  <div class="quiz-top">
+    <div class="quiz-type" id="quizMbtiType">INTJ</div>
+    <div class="quiz-progress-wrap"><div class="quiz-progress"><div class="quiz-progress-bar" id="progressBar" style="width:0%"></div></div></div>
+    <div class="quiz-count" id="quizCount">1/64</div>
+  </div>
+  <div class="question-wrap">
+    <div class="question-card"><div class="question-num" id="questionNum">第 1 题</div><div class="question-text" id="questionText"></div></div>
+    <div class="options" id="optionsContainer"></div>
+  </div>
+</div>
+
+<div id="page-report" class="page report-page"><div class="report-container" id="reportContent"></div></div>
+
+<div id="loading" class="loading-overlay"><div class="loading-ring"></div><div class="loading-text" id="loadingText">正在生成你的专属报告</div></div>
+
+<div id="imgPreview" class="img-preview-overlay">
+  <button class="img-preview-close" onclick="closeImgPreview()">✕</button>
+  <img id="previewImg" class="img-preview-img" alt="测评报告">
+  <div class="img-preview-tip">长按上方图片 → 选择<strong>"保存图片"</strong>或<strong>"存储图像"</strong><br>即可保存到手机相册</div>
+</div>
+
+<script>
+const MBTI_DATA={INTJ:{name:'战略家',shadow:'Ni-Fi Loop (自我沉溺)',traits:['战略家','独立思考','远见者'],careers:['战略咨询','科学研究','金融分析','架构设计'],compat:[{type:'ENFP',percent:96},{type:'ENTP',percent:92}],talent:'你是天生的战略家，拥有极强的内向直觉(Ni)，能够洞察事物的深层结构与长远趋势。你的独立思考能力让你在复杂问题中找到简洁的解决方案。',blindspot:'容易陷入Ni-Fi Loop，在自己的内心世界中反复打转，忽视外界的反馈与现实的约束。过度追求完美规划，可能导致行动迟缓。'},INTP:{name:'思想家',shadow:'Ti-Si Loop (过度分析)',traits:['思想家','逻辑分析','探索者'],careers:['程序开发','研究员','学者','数据科学'],compat:[{type:'ENTJ',percent:94},{type:'ENFJ',percent:89}],talent:'你是真理的探索者，拥有精密的内向思考(Ti)，能够拆解复杂系统，发现逻辑漏洞。你对知识有着纯粹的热爱，享受在思想的世界中自由遨游。',blindspot:'容易陷入Ti-Si Loop，过度分析而迟迟不行动。对细节的执着可能让你忽视整体方向，在社交场合中显得疏离。'},ENTJ:{name:'领袖',shadow:'Te-Se Loop (专断操控)',traits:['领袖','执行力','决策者'],careers:['企业管理','创业','投资','法律'],compat:[{type:'INTP',percent:95},{type:'INFP',percent:88}],talent:'你是天生的领导者，拥有强大的外向思考(Te)，能够高效组织资源、推动目标达成。你的决断力和战略眼光让你在竞争中脱颖而出。',blindspot:'容易陷入Te-Se Loop，过于专断而忽视他人感受。对效率的过度追求可能让你变得冷酷，忽略团队的情感需求。'},ENTP:{name:'发明家',shadow:'Ne-Fe Loop (哗众取宠)',traits:['发明家','创新思维','辩论家'],careers:['创业','广告创意','咨询','产品经理'],compat:[{type:'INFJ',percent:97},{type:'INTJ',percent:92}],talent:'你是创意的发动机，拥有丰富的外向直觉(Ne)，能够快速连接看似无关的概念，产生新颖的想法。你的思维敏捷，善于在辩论中发现新的可能性。',blindspot:'容易陷入Ne-Fe Loop，追求新鲜感而难以坚持。想法很多但落地不足，可能因为过于喜欢辩论而无意中伤害他人。'},INFJ:{name:'先知',shadow:'Ni-Ti Loop (与世隔绝)',traits:['先知','洞察力','理想主义'],careers:['心理咨询','写作','教育','非营利'],compat:[{type:'ENTP',percent:97},{type:'ENFP',percent:93}],talent:'你是灵魂的引路人，拥有深邃的内向直觉(Ni)，能够洞察人心的隐秘动机和事物的深层意义。你的理想主义和同理心让你成为他人信赖的导师。',blindspot:'容易陷入Ni-Ti Loop，在自己的精神世界中越走越远，与现实脱节。对完美的执着可能让你对自己和他人过于苛刻。'},INFP:{name:'治愈者',shadow:'Fi-Si Loop (自我封闭)',traits:['治愈者','初阶觉醒','成长期'],careers:['艺术创作','心理疗愈','内容创作','教育'],compat:[{type:'ENFJ',percent:98},{type:'ENTJ',percent:91}],talent:'你是灵魂的诗人，拥有极高的内向情感(Fi)。你对真善美有着敏锐的感知力，内心世界丰富多彩。你对他人的痛苦有着天然的同情，能够创造出触动人心的艺术作品。',blindspot:'容易陷入自我怜惜的怪圈。遇到挫折时，你倾向于从外界撤退，反复咀嚼过去的痛苦体验。这种过度的自我关注，有时会让你忽视了外界客观的支持，从而陷入行动瘫痪。'},ENFJ:{name:'导师',shadow:'Fe-Se Loop (过度迎合)',traits:['导师','感染力','引路人'],careers:['教育','人力资源','心理咨询','公关'],compat:[{type:'INFP',percent:97},{type:'ISFP',percent:90}],talent:'你是天生的导师，拥有温暖的外向情感(Fe)，能够敏锐感知他人的需求并激发他们的潜能。你的感染力和组织能力让你成为团队的凝聚核心。',blindspot:'容易陷入Fe-Se Loop，过度迎合他人而忽视自己的需求。你可能因为害怕冲突而压抑真实感受，最终导致情绪耗竭。'},ENFP:{name:'梦想家',shadow:'Ne-Te Loop (散漫焦虑)',traits:['梦想家','热情洋溢','可能性'],careers:['创意策划','记者','心理咨询','创业'],compat:[{type:'INTJ',percent:96},{type:'INFJ',percent:93}],talent:'你是热情的梦想家，拥有奔放的外向直觉(Ne)，能够看到无限的可能性。你的热情和感染力能够点燃周围人的希望，你是天生的激励者。',blindspot:'容易陷入Ne-Te Loop，想法太多但执行不足。你可能因为追求新鲜感而频繁切换方向，最终一事无成。对他人认可的过度需求可能让你迷失自我。'},ISTJ:{name:'守护者',shadow:'Si-Fi Loop (固执抗拒)',traits:['守护者','责任感','可靠'],careers:['会计审计','公务员','工程管理','法务'],compat:[{type:'ESFP',percent:92},{type:'ESTP',percent:88}],talent:'你是可靠的守护者，拥有扎实的内向感觉(Si)，能够记住细节、坚守承诺。你的责任感和执行力让你成为组织中不可或缺的中坚力量。',blindspot:'容易陷入Si-Fi Loop，过于依赖过去的经验而抗拒变化。你可能因为坚持传统而错过新的机会，在情感表达上显得克制而疏离。'},ISFJ:{name:'照顾者',shadow:'Si-Ti Loop (默默忍受)',traits:['照顾者','温暖体贴','奉献'],careers:['护理','教育','行政','社工'],compat:[{type:'ESTP',percent:93},{type:'ESFP',percent:89}],talent:'你是温暖的照顾者，拥有细腻的内向感觉(Si)和丰富的内向情感(Fi)，能够默默记住他人的需求并给予贴心的关怀。你的奉献精神让你成为他人的避风港。',blindspot:'容易陷入Si-Ti Loop，默默忍受委屈而不表达。你可能因为过度照顾他人而忽视自己，在需要为自己争取时显得退缩。'},ESTJ:{name:'管理者',shadow:'Te-Ne Loop (控制欲膨胀)',traits:['管理者','组织力','务实'],careers:['企业管理','金融','军官','项目管理'],compat:[{type:'ISFP',percent:91},{type:'INFP',percent:85}],talent:'你是高效的管理者，拥有务实的外向思考(Te)，能够建立秩序、提升效率。你的组织能力和决断力让你在管理岗位上如鱼得水。',blindspot:'容易陷入Te-Ne Loop，控制欲膨胀而忽视他人感受。你可能因为过于追求效率而变得专断，在情感上显得迟钝。'},ESFJ:{name:'东道主',shadow:'Fe-Ne Loop (过度干涉)',traits:['东道主','热情好客','协调'],careers:['护理','教育','销售','活动策划'],compat:[{type:'ISFP',percent:92},{type:'ISTP',percent:87}],talent:'你是热情的东道主，拥有温暖的外向情感(Fe)，能够营造和谐的氛围，让每个人都感到被接纳。你的协调能力让你成为社交的核心。',blindspot:'容易陷入Fe-Ne Loop，过度干涉他人的事务而边界不清。你可能因为害怕被否定而过度迎合，在坚持自我时感到焦虑。'},ISTP:{name:'工匠',shadow:'Ti-Ni Loop (多疑孤僻)',traits:['工匠','动手能力','冷静'],careers:['工程师','技师','飞行员','外科医生'],compat:[{type:'ESFJ',percent:90},{type:'ENFJ',percent:85}],talent:'你是灵巧的工匠，拥有精密的内向思考(Ti)和敏锐的内向感觉(Si)，能够快速理解机械原理并动手解决问题。你的冷静和实用让你在危机中脱颖而出。',blindspot:'容易陷入Ti-Ni Loop，多疑孤僻而不愿求助。你可能因为过于独立而忽视团队合作，在情感表达上显得迟钝。'},ISFP:{name:'艺术家',shadow:'Fi-Ni Loop (消极避世)',traits:['艺术家','审美感','自由'],careers:['设计师','音乐家','摄影师','厨师'],compat:[{type:'ENFJ',percent:94},{type:'ESFJ',percent:91}],talent:'你是自由的艺术家，拥有丰富的内向情感(Fi)和敏锐的审美感觉，能够用感官和心灵创造美的体验。你的真实和柔软让你拥有独特的魅力。',blindspot:'容易陷入Fi-Ni Loop，消极避世而回避冲突。你可能因为害怕被评判而隐藏真实想法，在压力下选择逃避而非面对。'},ESTP:{name:'冒险家',shadow:'Se-Fe Loop (冲动鲁莽)',traits:['冒险家','行动力','灵活'],careers:['销售','创业','体育','应急服务'],compat:[{type:'ISFJ',percent:93},{type:'ISTJ',percent:88}],talent:'你是勇敢的冒险家，拥有敏锐的外向感觉(Se)，能够快速把握当下的机会并果断行动。你的灵活性和实际让你在变化中如鱼得水。',blindspot:'容易陷入Se-Fe Loop，冲动鲁莽而缺乏长远规划。你可能因为追求即时刺激而忽视后果，在需要耐心时显得焦躁。'},ESFP:{name:'艺人',shadow:'Se-Fi Loop (逃避现实)',traits:['艺人','感染力','乐观'],careers:['表演','销售','旅游','活动策划'],compat:[{type:'ISTJ',percent:92},{type:'ISFJ',percent:89}],talent:'你是闪耀的艺人，拥有热情的外向感觉(Se)和丰富的内向情感(Fi)，能够用活力和真诚感染周围的人。你的乐观和审美让生活充满色彩。',blindspot:'容易陷入Se-Fi Loop，逃避现实而不愿面对困难。你可能因为追求快乐而回避深度思考，在需要坚持时容易放弃。'}};
+
+const STAGE_DATA=[{name:'未觉醒',min:0,max:40,quote:'沉睡不是罪过，醒来才是勇气。',state:'你还在按照外界的期待生活，很少倾听内心的声音。你的天赋能量被压抑在潜意识深处，等待被唤醒。这不是你的错——大多数人都停留在这个阶段，但你已经开始探索，这本身就是觉醒的开始。',mechanism:'主导功能尚未发展，依赖辅助功能或劣势功能应对外界，容易感到迷茫和无力。你的行为更多是对外界刺激的反应，而非主动选择。',actions:['每天花10分钟写日记，记录真实感受。','做一件一直想做但不敢做的小事。','列出三个让你感到充满活力的场景。'],special:'自我觉察练习——每天睡前问自己："今天我做的事情，有多少是我真正想做的？"'},{name:'初阶',min:41,max:60,quote:'带着恐惧前行，每一次行动都是对命运的反击。',state:'你开始尝试表达自我，但容易因外界的批评而退缩。你的敏感是你的雷达，而不是缺陷。你正在学习如何带着恐惧前行，这正是勇气萌芽的时刻。',mechanism:'主导功能开始觉醒，但与劣势功能的冲突明显，容易陷入Loop循环，在自我世界中反复打转。能量主要用于自我防御和确认，尚未完全向外流动。',actions:['带着不舒服的情绪做事。','用客观产出衡量价值。','像审视朋友一样审视自己。'],special:'进阶心法·客观化练习。当收到批评时，先区分"事实"和"评价"——事实是具体的行为，评价是他人的主观判断。'},{name:'中阶',min:61,max:80,quote:'你不再需要证明自己，因为你已经成为自己。',state:'你已经建立了稳定的自我认知，能够在保持本色的同时适应外界。你的能量开始向外流动，不再仅仅用于自我防御。你开始感受到"做自己"和"被世界接纳"可以同时存在。',mechanism:'主导功能与辅助功能形成良好协作，劣势功能开始被整合，能够灵活切换不同的心理模式。自我认同不再依赖外界评价，内在稳定性显著提升。',actions:['主动承担一个超出舒适区的项目。','指导一个比你年轻的人，教学相长。','定期复盘：我的成长是否停滞了？'],special:'突破练习——每个月做一件让你感到"我还不够格"的事。不适感是成长的信号，不是停止的理由。'},{name:'高阶',min:81,max:100,quote:'成为光，而不是寻找光。',state:'你已经完成了自我整合，内外在高度统一。你的存在本身就是一种影响力，能够自然地启发和带动周围的人。你不再需要寻找答案，因为你已经活成了答案。',mechanism:'全部四个功能达到动态平衡，能够根据情境自由调用，达到"无为而无不为"的状态。自我与外界的边界消融，感受到与更大整体的连接。',actions:['将你的经验系统化，帮助更多人成长。','定期独处，与内在自我重新连接。','做一件不为任何目的、纯粹出于热爱的事。'],special:'无我练习——做一件完全不考虑"我能得到什么"的事。当行动不再以自我为中心，真正的自由才会到来。'}];
+
+const DIMENSIONS=[{key:'rational',name:'理性决策',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>'},{key:'self',name:'自我接纳',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'},{key:'emotion',name:'情绪稳定',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>'},{key:'social',name:'社会适应',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},{key:'pattern',name:'人生格局',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'}];
+
+const QUESTIONS=[{dim:'rational',text:'做决定时，我更依赖逻辑分析而非直觉感受。'},{dim:'rational',text:'面对复杂问题，我能够拆解成多个步骤逐一解决。'},{dim:'rational',text:'我会在行动前充分考虑各种可能性和后果。'},{dim:'rational',reverse:true,text:'我经常因为情绪化而做出事后后悔的决定。'},{dim:'rational',text:'我能够客观评估自己的能力和局限，不夸大也不贬低。'},{dim:'rational',text:'遇到分歧时，我更关注事实和逻辑而非谁对谁错。'},{dim:'rational',reverse:true,text:'我很难在压力下保持清晰的思考。'},{dim:'rational',text:'我善于从失败中提取经验教训，而不是沉溺于情绪。'},{dim:'rational',text:'我能够区分"我想要"和"我需要"，做出理性取舍。'},{dim:'rational',reverse:true,text:'别人的情绪很容易影响我的判断和决定。'},{dim:'rational',text:'我习惯用数据和事实支撑自己的观点。'},{dim:'rational',text:'面对诱惑时，我能够考虑长远利益而克制当下冲动。'},{dim:'rational',reverse:true,text:'我经常在多个选项之间犹豫不决，无法做出决定。'},{dim:'self',text:'我能够坦然接受自己的不完美，而不是苛责自己。'},{dim:'self',text:'我清楚自己的价值观，并且愿意为之坚持。'},{dim:'self',reverse:true,text:'我经常拿自己和别人比较，觉得自己不够好。'},{dim:'self',text:'我能够善待自己，像对待好朋友一样对待自己。'},{dim:'self',text:'我承认自己会犯错，但不会因此否定整个人。'},{dim:'self',reverse:true,text:'别人的批评会让我陷入长时间的自我怀疑。'},{dim:'self',text:'我敢于表达真实的想法和感受，即使可能不被认同。'},{dim:'self',reverse:true,text:'我觉得自己不值得被爱和被尊重。'},{dim:'self',text:'我能够欣赏自己的优点和成就，而不觉得是在炫耀。'},{dim:'self',reverse:true,text:'我经常为了取悦他人而压抑自己的真实需求。'},{dim:'self',text:'面对挫折时，我能够鼓励自己而不是自我攻击。'},{dim:'self',text:'我接受自己的情绪，无论是积极的还是消极的。'},{dim:'self',reverse:true,text:'我觉得如果别人真正了解我，就不会喜欢我了。'},{dim:'emotion',text:'遇到突发状况时，我能够较快平复情绪。'},{dim:'emotion',reverse:true,text:'我的情绪容易大起大落，像过山车一样。'},{dim:'emotion',text:'我能够觉察自己的情绪变化，并理解其原因。'},{dim:'emotion',reverse:true,text:'压力大的时候，我会失眠或食欲不振。'},{dim:'emotion',text:'我不会因为小事而长时间生气或焦虑。'},{dim:'emotion',reverse:true,text:'我经常感到焦虑不安，即使没有明确的原因。'},{dim:'emotion',text:'我能够用健康的方式释放负面情绪，而不是压抑或爆发。'},{dim:'emotion',reverse:true,text:'别人的一句话就能让我心情低落一整天。'},{dim:'emotion',text:'我对未来有基本的安全感，不过度担忧。'},{dim:'emotion',reverse:true,text:'我容易陷入悲伤或抑郁的情绪中难以自拔。'},{dim:'emotion',text:'我能够在情绪激动时暂停一下，而不是立刻反应。'},{dim:'emotion',reverse:true,text:'我经常感到疲惫，即使没有做太多事情。'},{dim:'emotion',text:'我有让自己平静下来的方法，如深呼吸、冥想等。'},{dim:'social',text:'我能够在不同的社交场合中调整自己的行为方式。'},{dim:'social',reverse:true,text:'我在人群中经常感到不自在，想尽快离开。'},{dim:'social',text:'我能够理解他人的观点和感受，即使我不认同。'},{dim:'social',reverse:true,text:'我很难和陌生人建立联系或开启对话。'},{dim:'social',text:'我能够在团队中有效协作，承担自己的责任。'},{dim:'social',reverse:true,text:'我经常误解别人的意图，或者被别人误解。'},{dim:'social',text:'我能够适当地表达自己的需求，同时考虑他人的感受。'},{dim:'social',reverse:true,text:'我害怕冲突，会不惜一切代价避免争论。'},{dim:'social',text:'我能够建立和维持有意义的人际关系。'},{dim:'social',reverse:true,text:'我觉得很难信任别人，总是保持距离。'},{dim:'social',text:'我能够接受社会规则，同时保持自己的独立性。'},{dim:'social',reverse:true,text:'我经常觉得自己和周围的人格格不入。'},{dim:'social',text:'在需要的时候，我能够主动寻求帮助和支持。'},{dim:'pattern',text:'我对自己的人生有清晰的方向和长期目标。'},{dim:'pattern',reverse:true,text:'我经常觉得生活没有意义，不知道自己在为什么而活。'},{dim:'pattern',text:'我能够从更大的视角看待当下的困难和挫折。'},{dim:'pattern',reverse:true,text:'我更关注眼前的利益，很少考虑长远发展。'},{dim:'pattern',text:'我相信自己的人生有独特的价值和使命。'},{dim:'pattern',reverse:true,text:'我觉得自己的人生已经定型，不会有什么改变了。'},{dim:'pattern',text:'我能够从失败中看到成长的机会，而不是一味否定。'},{dim:'pattern',reverse:true,text:'我经常嫉妒别人的成就，觉得自己命运不公。'},{dim:'pattern',text:'我愿意为了更大的目标而忍受当下的不适和延迟满足。'},{dim:'pattern',reverse:true,text:'我觉得人生就是及时行乐，想那么多没用。'},{dim:'pattern',text:'我能够看到事物之间的联系，理解复杂系统的运作。'},{dim:'pattern',reverse:true,text:'我很难接受变化，总是希望一切保持不变。'},{dim:'pattern',text:'我对世界保持好奇心，愿意持续学习和成长。'}];
+
+const AUTH_CODES=['22HSTDH5','22NZRWHM','2582BAXY','27458S4J','278R24N8','28W7ECMF','29FWBJKG','29VF7DXC','2ADGMBX7','2AF7MXV6','2BBQKT7U','2CDKBA5Z','2DPYUR8X','2F9F466M','2KMSHB74','2KSUV7UC','2PZ6UQ4W','2UNDTP3Z','2WVUAGC4','322BJ7SF','35LNEE6U','3A33TWQR','3ABKNPX6','3EPNGTYH','3G5JHFQ7','3KG2VCAE','3M9EFGEQ','3NZ3JJYY','3QCZ8HKZ','3TV7D8P2','3WU2T6Q6','42KVFZGA','44UQNAP8','4AASZMTJ','4B5RUGJ9','4CSVYV4U','4DL968QS','4EDHP2F6','4EGE3ZX4','4GWJJFQJ','4MD2LBNZ','4R2L3JJ8','4S46YBGP','4SMAFCF6','4WMWRNZA','5262TCJW','5278BN7H','592K88YC','5DQBT2RD','5GPV8FP7','5KAJKL9J','5KFNS7ZM','5KWMGWDD','5LEPYCUX','5LMY9VRQ','5MCGKYAF','5MWS2A2X','5YUAC6XK','67PAANJP','67UF7U8U','68ZEE76F','6A3VWDQB','6A4BYEBP','6DLY2EJE','6FJ63934','6FQ5RZDL','6J56D5HW','6JHT8F5K','6M25RHQM','6PXR9H8K','6UAN6WYZ','6VCTE9DX','6W5YMCHZ','6WX5ACB8','6ZDYTWAM','7ENJDN89','7FPF32F3','7NCR55XT','7NXHJ9N3','7RM2546W','7VPK72HL','7YUVMWV9','7Z8VXVDC','7ZB9JEGJ','87375FXA','87YMK2PB','88G9PGG5','89J3T98X','8DPAJ74K','8E4PRVZJ','8HGB7VCY','8JDTMW3S','8L8P2R7C','8MHZ49DF','8NTF6RP6','8PNF7J84','8QD34MMP','8RTRKT4T','8S2Q9HXE','8XVVLELD','922SBDTB','924WBSSF','96MK5DDE','96VVE9L9','9AUAJCSZ','9C6YHZX2','9CYC9PMJ','9CZQGANB','9EPXCBRV','9F5QWGSL','9FBHB893','9FG8SRHA','9JN2BK3U','9JTNEB8W','9PGGBQAA','9RFU5GK2','9RGFFWGG','9RJUX35L','9TQAQ3TT','9UU5AHSY','9W2KPL5Z','9XU3DJEV','9YHE9RRA','A26V7FV6','A2GKTQK4','A33RR55A','A3HXRXRD','A438B6W6','A6HRQTC4','AEMLNQ7J','AJ7WKQ33','AM86QRAC','APQ8YYL3','ASF4J2KJ','AW794N5M','AWT6VAV9','AXMUE6YK','AZ6BBNHZ','B4QZP8VK','B733FHBJ','B7RCS8MA','BFDP5QNZ','BG5UQ8SW','BHF9REJ9','BNMRZZ5W','BQPRPKJU','BU7D73DH','BUSMBMNY','BWG82NCC','C3AV2KZF','C58NEBV2','C7E96M9K','C7QE85QY','C9H5BVCN','CBBALD3R','CBUEUL86','CENYAJ8K','CFH9HC2P','CGJU99F9','CHG8UJ9A','CJMXQK7Y','CNT42JE8','CTRZ7BKJ','CTYZUUC5','CVV6KMVU','D3W4NEHA','D5H3CMRE','D9R8T4YW','DALUJC6F','DGKYUZYE','DKCUE6S9','DLAABMFR','DLLFWNWT','DT9822BV','DXA3V4WD','DY54S4SS','DYB428HC','E287QF3J','E7BPNYZS','E8292N8S','E8QV8NQD','E94MTNSZ','E9VRUMK4','EC54MRN6','EDYPZGRJ','EES2EGWF','EG9NKHYW','EM8TS2NL','EN2ZPR5U','ER82AGF9','ERMPBAL8','ESR5VS4V','EXKHTZV8','EZLZB2CW','F5Y9P5UY','F76YYJXM','F95G4VZS','FAEBPCGS','FDWBJUCX','FG7BES66','FH82AL64','FM9WMCA3','FNYKPU7Q','FPRWNZER','FRV5V2VA','FSV3FR8G','FTWH8ZUZ','FWE79H5B','FX547UBD','FZRJJJ68','G4QEEBW8','G5USB8VW','GBX9RWX8','GCWUFADY','GEWXGY36','GEZEH5GZ','GN4JYAND','GP9A2TJ3','GQ45TBXS','GR28HAHF','GVHH6RDV','GYZEPDRQ','H27HYNKP','H5B4AAD4','H5D767RX','H8E3YSHX','HC7G9UR5','HDP5UCBC','HEDZWTSR','HHM7RT59','HJBJ85BK','HMFTV7K9','HRY2AHK7','HV9DZQ9Y','HXN6PY3A','HXNKDYTQ','HYCTL7DT','HZ3D9GZG','J2AK5KKM','J5FLXPYZ','J6YXPBJ4','J7TAPFTY','J9FFM3C6','JCV2HCTX','JD8WRPRL','JF6UHYF7','JK25AMQM','JK8BXSJ9','JKEXGRNY','JN74JT5E','JND9P4K7','JNMTF7UM','JNXQZ58R','JPMCEYH6','JQKXPXYL','JSZ4GGDS','JWWC3VYY','JYH9JHXM','JZP7PX5T','K74JU2RD','K83TMADQ','K8KNT8PS','KFEE83YZ','KHDQHPZ9','KKFQ9WCE','KLLPR5ZK','KM8BM7K6','KR8GJN9M','KS3XUXCV','KVQ5K926','KVT656VZ','LAU8U8RG','LC7GPKVK','LFQHNFRM','LG9FEHTE','LGWRVZS9','LHACLYWQ','LJ69R5HL','LJH2LSB2','LKHVLRVY','LKWWP4TA','LN3ZF7PM','LNQCFKCG','LSAJFBKH','LSZSYZ8L','LTM2MJXL','LULDHNND','LV5XP2PW','LWEJTC2U','LZY2EM5D','M3B78BQJ','M43UCRHZ','M4UJ9QZL','M9QV3F6B','MADTJK43','MAVTU6C2','MB7MPHW8','MDEXASCH','MEKZBLYU','MGH9H5FS','MGR9FWE7','MLMUKYPU','MLWAB7JZ','MRBNA58U','MREQKZHX','MWEJLQ6G','N2A4H8DT','N6CNF28B','N7PHY4QE','N7QGMGTY','N7T9NG9F','N99Y65RS','NALLHNNU','NBVBYQ2S','NCQHCEMF','NH95YNA5','NHJXC4VF','NJA3FYYD','NK8WFJ83','NKW3SQ56','NMS4Z7HG','NMWKSPWE','NNFMLJXX','NPURMXVD','NSSF2SJL','NWR2A653','NX8MZSRP','NZDFP3L4','NZFUGGPX','P3CQFNUB','P5HFFGPH','PC49A3W3','PDEKG9XZ','PK2W5XA9','PPXC5PPU','PRVVBUTH','PS8WHJSZ','PSWVXZE7','PTAJASHB','PTFVFU4V','PW4GAB2P','PWNDEKYP','Q43D8CEK','Q53LL85S','Q7S8RTMV','Q8X8U4AB','QABPH2NE','QFPR2B58','QFPUXYWY','QJCUJFDR','QKSFDDTT','QLBMVRKD','QNRS7CUG','QP7ZDJC4','QR4D8TRV','QSCUJF8J','QTFT2TEF','R3A5SWSJ','R4HQEYCJ','R4PG6CUH','R5BVBSM2','R693ASA3','R7VUURLR','R88T9E2V','RGYEE4W4','RM2Y8YTV','RQSSQGEF','RT5QHM39','RUXFKCBJ','RYVCYENQ','S3G2V74R','S3PN38HA','S7X2LE2Q','S8FT8VMG','SBP58ELX','SDV4G9VH','SER9L3LH','SFNZX9AL','SKGBWYD7','SKRLX2DU','SLYHZ4T7','SMPM4TDU','SNCFUDRS','SP3B6ZTQ','SV73YYBD','SVMF9TMJ','SXCJ6SUK','SXM6D474','SY4PNKD7','SYM4FVNZ','T3L94X9U','T5YPR6RW','T6ZX36GR','T8M4MJB8','TBDHL8TL','TGUY7XV5','THF542A4','TJUXWJSE','TMCH4TWT','TT7ANH8W','TU9TCVEL','TXQYPMN8','TXV9QGF9','TY7GCA6N','TZMR26A2','U5E9UW9T','U7LFLMFQ','U83RN34Q','U9N9BTVG','UA8BJD9D','UF5HZQ3R','UFRN59KA','UHBEQKHJ','UHF76NR3','UJMZ8NNM','UKJMEDH4','ULVDNL6Z','UM5Z4FBE','UN6WH53N','UQBAYH4G','USWLF9LR','UTRVKB87','UUUJQG58','UY6NC38S','UZRXQZWZ','V3KWLYKY','V4GPDNNU','V5GXEPTZ','V623UNGL','V8Y7FRFV','V9MS4R4F','VF8XHTWQ','VGXAGVXL','VH3CXJXY','VSLHUFG4','VVR8QCQA','VXKBL2V9','VYZ4BQWE','W7L83R6A','W7VTZZZ3','W8T32R8J','WAWGMYTB','WBHT6AB9','WDC52G9X','WEMQHCHV','WER2WCXN','WNR7PLW5','WRGGLRFM','WTSBZK25','WWB3NN3A','WWGWBLLW','WXT7RV3M','WZK2T5GG','X4BWD9JE','X4WQC6G5','XCLR2HQR','XEHUY9CT','XF3NRBFU','XL8UUTYR','XLE3PKAN','XM9PENSC','XN4DSS9H','XU3YUNMZ','XWJUDDJ7','XZGR5SUZ','Y2ASCPTJ','Y3H6PBJ4','Y3NKVH73','Y5TSQ8R7','Y6AAXKKF','Y8PQ3GGU','YAYR546A','YCS74M7B','YE6W87Y2','YEHF3CCJ','YFKT6SJE','YMJY69H8','YR4UHCRJ','YRPCZX6Z','YUNDTVU4','YVPWPWFE','YYXT7HKA','YZ3FU8B2','Z2N64928','Z2USYSUP','Z65YBZY2','Z79M88UF','Z7FGYV6R','Z8ZKWGPE','ZNBTCLJN','ZNGNCGD2','ZNYHY65X','ZP5ZMHHL','ZPPBSJR8','ZRE7BD33','ZREGKM7U','ZRNFW8A3','ZS2BF7KF','ZTM66WWG','ZVUXLFJ7'];
+
+let currentAuthCode='',selectedMBTI='',currentQuestion=0,answers={},deviceFingerprint='';
+function generateDeviceFingerprint(){const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');canvas.width=200;canvas.height=50;ctx.textBaseline='top';ctx.font="14px 'Arial'";ctx.fillStyle='#f60';ctx.fillRect(0,0,200,50);ctx.fillStyle='#069';ctx.fillText('DeviceFingerprint',2,5);ctx.fillStyle='rgba(102,204,0,0.7)';ctx.fillText('DeviceFingerprint',4,7);let str=canvas.toDataURL();let hash=0;for(let i=0;i<str.length;i++){hash=((hash<<5)-hash)+str.charCodeAt(i);hash|=0;}return 'fp_'+Math.abs(hash).toString(36)+'_'+screen.width+'x'+screen.height+'_'+navigator.language;}
+deviceFingerprint=generateDeviceFingerprint();
+
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+let isReportMode=false;
+function showCodeModal(report){isReportMode=report;document.getElementById('modalTitle').textContent=report?'输入授权码查看报告':'请输入授权码';document.getElementById('modalDesc').innerHTML=report?'输入你购买时获得的授权码<br>即可查看已生成的测评报告':'授权码已通过订单消息发送给您<br>支持直接粘贴，8位字符';document.getElementById('codeModal').classList.add('active');document.getElementById('codeError').textContent='';document.getElementById('codeError').classList.remove('show');const input=document.getElementById('codeInput');input.value='';setTimeout(()=>input.focus(),300);}
+document.getElementById('codeModal').addEventListener('click',e=>{if(e.target.id==='codeModal')document.getElementById('codeModal').classList.remove('active');});
+document.getElementById('codeInput').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');});
+document.getElementById('codeInput').addEventListener('keydown',e=>{if(e.key==='Enter')verifyCode();});
+
+async function verifyCode(){const code=document.getElementById('codeInput').value.trim().toUpperCase();const errEl=document.getElementById('codeError');if(code.length<8){errEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>请输入完整的8位授权码';errEl.classList.add('show');return;}
+try{
+  // 调用后端API验证授权码
+  const verifyRes=await fetch('/api/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,device_fingerprint:deviceFingerprint})});
+  const verifyData=await verifyRes.json();
+  if(!verifyData.success){errEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'+(verifyData.message||'授权码无效');errEl.classList.add('show');return;}
+  // 如果未激活，先激活（绑定设备）
+  if(verifyData.data.status==='can_activate'){
+    const actRes=await fetch('/api/auth/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,device_fingerprint:deviceFingerprint,device_info:{user_agent:navigator.userAgent}})});
+    const actData=await actRes.json();
+    if(!actData.success){errEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'+(actData.message||'激活失败');errEl.classList.add('show');return;}
+  }
+  currentAuthCode=code;document.getElementById('codeModal').classList.remove('active');
+  if(isReportMode){
+    // 查看报告模式：从后端获取已保存的报告
+    const reportRes=await fetch('/api/test/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,device_fingerprint:deviceFingerprint})});
+    const reportData=await reportRes.json();
+    if(reportData.success&&reportData.data){renderReport(reportData.data.mbti_type,reportData.data.scores,reportData.data.stage);}
+    else{errEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>该授权码尚未生成测评报告，请先完成测评';document.getElementById('codeModal').classList.add('active');setTimeout(()=>{showMBTISelection();document.getElementById('codeModal').classList.remove('active');},1500);}
+  }else{
+    showMBTISelection();
+  }
+}catch(e){errEl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>网络错误，请稍后重试';errEl.classList.add('show');console.error(e);}
+}
+
+function showMBTISelection(){const grid=document.getElementById('mbtiGrid');const types=Object.keys(MBTI_DATA);grid.innerHTML=types.map((t,i)=>`<div class="mbti-btn" style="animation:cardRise .5s var(--ease-out) ${i*0.03}s both" onclick="selectMBTI('${t}')">${t}</div>`).join('');showPage('page-mbti');}
+function selectMBTI(type){selectedMBTI=type;document.querySelectorAll('.mbti-btn').forEach(b=>b.classList.toggle('selected',b.textContent===type));document.getElementById('startQuizBtn').disabled=false;}
+function startQuiz(){if(!selectedMBTI)return;currentQuestion=0;answers={};document.getElementById('quizMbtiType').textContent=selectedMBTI;showPage('page-quiz');renderQuestion();}
+
+function renderQuestion(){const q=QUESTIONS[currentQuestion];document.getElementById('questionNum').textContent=`第 ${currentQuestion+1} 题 / 共 ${QUESTIONS.length} 题`;document.getElementById('questionText').textContent=q.text;document.getElementById('quizCount').textContent=`${currentQuestion+1}/${QUESTIONS.length}`;document.getElementById('progressBar').style.width=((currentQuestion)/QUESTIONS.length*100)+'%';const options=[{v:1,label:'非常不符合'},{v:2,label:'比较不符合'},{v:3,label:'一般'},{v:4,label:'比较符合'},{v:5,label:'非常符合'}];document.getElementById('optionsContainer').innerHTML=options.map((o,i)=>`<div class="option-btn ${answers['q'+currentQuestion]===o.v?'selected':''}" style="animation:qIn .4s var(--ease-out) ${i*0.05}s both" onclick="selectOption(${o.v})"><div class="option-dot">${o.v}</div><div>${o.label}</div></div>`).join('');}
+function selectOption(val){answers['q'+currentQuestion]=val;document.querySelectorAll('.option-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===val));setTimeout(()=>{if(currentQuestion<QUESTIONS.length-1){currentQuestion++;renderQuestion();}else submitQuiz();},280);}
+
+function calculateScores(){const dimScores={};DIMENSIONS.forEach(d=>dimScores[d.key]=[]);QUESTIONS.forEach((q,i)=>{let score=answers['q'+i]||3;if(q.reverse)score=6-score;dimScores[q.dim].push(score);});const result={};let total=0;DIMENSIONS.forEach(d=>{const avg=dimScores[d.key].reduce((a,b)=>a+b,0)/dimScores[d.key].length;result[d.key]=Math.round((avg/5)*100);total+=result[d.key];});result.total=Math.round(total/5);return result;}
+function getStageIdx(score){for(let i=STAGE_DATA.length-1;i>=0;i--)if(score>=STAGE_DATA[i].min)return i;return 0;}
+
+async function submitQuiz(){document.getElementById('loading').classList.add('active');const scores=calculateScores();const stageIdx=getStageIdx(scores.total);
+try{
+  await fetch('/api/test/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:currentAuthCode,device_fingerprint:deviceFingerprint,mbti_type:selectedMBTI,answers,scores,total_score:scores.total,stage:stageIdx})});
+}catch(e){console.error('提交失败',e);}
+setTimeout(()=>{document.getElementById('loading').classList.remove('active');renderReport(selectedMBTI,scores,stageIdx);},2200);}
+
+function animateNumber(el,target,duration=1200){const start=performance.now();function update(now){const elapsed=now-start;const progress=Math.min(elapsed/duration,1);const eased=1-Math.pow(1-progress,3);el.textContent=Math.round(target*eased);if(progress<1)requestAnimationFrame(update);}requestAnimationFrame(update);}
+
+function renderReport(mbti,scores,stageIdx){
+  const mbtiData=MBTI_DATA[mbti];const stage=STAGE_DATA[stageIdx];const now=new Date();
+  const dateStr=`${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日`;
+  const dateShort=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+  const archiveId=`${mbti}-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${Math.floor(Math.random()*90+10)}`;
+  const rxNo='RX'+Math.floor(100000+Math.random()*900000);
+
+  function gaugeSVG(percent,idx){
+    const angle=(percent/100)*180;const radian=(angle-180)*Math.PI/180;
+    const cx=70,cy=70,r=55;const x=cx+r*Math.cos(radian),y=cy+r*Math.sin(radian);
+    const largeArc=angle>180?1:0;
+    return `<svg class="gauge-svg" viewBox="0 0 140 80">
+      <defs><linearGradient id="gg${idx}" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#c9a050"/><stop offset="50%" style="stop-color:#e0a030"/><stop offset="100%" style="stop-color:#5a9c7a"/></linearGradient></defs>
+      <path d="M 15 70 A 55 55 0 0 1 125 70" fill="none" stroke="rgba(46,42,31,.06)" stroke-width="12" stroke-linecap="round"/>
+      <path d="M 15 70 A 55 55 0 ${largeArc} 1 ${x} ${y}" fill="none" stroke="url(#gg${idx})" stroke-width="12" stroke-linecap="round" style="stroke-dasharray:300;stroke-dashoffset:300;animation:arcDraw 1.5s var(--ease-out) ${0.3+idx*0.1}s forwards"/>
+      ${[0,45,90,135,180].map(a=>{const r2=62,ar=(a-180)*Math.PI/180;return `<line x1="${cx+(r2-6)*Math.cos(ar)}" y1="${cy+(r2-6)*Math.sin(ar)}" x2="${cx+r2*Math.cos(ar)}" y2="${cy+r2*Math.sin(ar)}" stroke="rgba(46,42,31,.1)" stroke-width="2"/>`;}).join('')}
+      <line x1="${cx}" y1="${cy}" x2="${cx+40*Math.cos((angle-90)*Math.PI/180)}" y2="${cy+40*Math.sin((angle-90)*Math.PI/180)}" stroke="#5a4a30" stroke-width="3" stroke-linecap="round" style="transform-origin:${cx}px ${cy}px;animation:needleIn 1.8s var(--ease-out) ${0.3+idx*0.1}s both"/>
+      <circle cx="${cx}" cy="${cy}" r="6" fill="#5a4a30"/><circle cx="${cx}" cy="${cy}" r="3" fill="#f5f0e5"/>
+    </svg>`;
+  }
+  function getStatus(p){if(p>=70)return{cls:'status-integrated',text:'已整合'};if(p>=40)return{cls:'status-growing',text:'成长中'};return{cls:'status-developing',text:'待发展'};}
+
+  const gaugesHTML=DIMENSIONS.map((d,i)=>{const val=scores[d.key];const status=getStatus(val);return `<div class="gauge-card">${gaugeSVG(val,i)}<div class="gauge-value"><span class="num" data-target="${val}">0</span><span>%</span></div><div class="gauge-label">${d.icon}${d.name}</div><span class="gauge-status ${status.cls}">${status.text}</span></div>`;}).join('');
+  const stageMarkers=STAGE_DATA.map((s,i)=>`<span class="${i===stageIdx?'active':''}">${s.name}</span>`).join('');
+  const careersHTML=mbtiData.careers.map(c=>`<div class="career-item">${c}</div>`).join('');
+  const compatHTML=mbtiData.compat.map((c,i)=>`<div class="compat-item"><div class="compat-header"><span class="compat-type">${c.type}</span><span class="compat-percent">${c.percent}%</span></div><div class="compat-bar"><div class="compat-fill" data-width="${c.percent}" style="animation-delay:${0.5+i*0.2}s"></div></div></div>`).join('');
+  const actionsHTML=stage.actions.map((a,i)=>`<li><span class="action-num">${i+1}</span><span>${a}</span></li>`).join('');
+  const traitsHTML=mbtiData.traits.map(t=>`<span class="trait-tag">· ${t}</span>`).join('');
+  const stageSubs=['沉睡期','觉醒','整合期','圆满'];
+  const stageSub=stageSubs[stageIdx];
+
+  document.getElementById('reportContent').innerHTML=`
+    <div class="report-hero">
+      <div class="hero-title-row"><div class="hero-line"></div><div class="hero-title">灵魂档案</div><div class="hero-line right"></div></div>
+      <div class="hero-stage-badge"><div class="hero-stage-name">${stage.name}</div><div class="hero-stage-sub">${stageSub}</div></div>
+      <div class="hero-mbti">${mbti}</div>
+      <div class="hero-persona-line"></div>
+      <div class="hero-persona">${mbtiData.name}</div>
+      <div class="hero-score-card"><span class="hero-score-label">心智总分</span><span class="hero-score-value" id="heroScore">0</span><span class="hero-score-total">/100</span></div>
+    </div>
+    <div class="archive-card"><div class="archive-label">档案编号</div><div class="archive-id">${archiveId}</div><div class="archive-divider"></div><div class="archive-date-label">建档日期</div><div class="archive-date">${dateStr}</div></div>
+    <div class="r-card" style="animation-delay:.1s"><div class="r-card-head"><div class="r-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="r-card-title">人格档案</div></div><div style="height:1px;background:rgba(46,42,31,.06);margin:14px 0 18px"></div>
+      <div class="persona-item"><div class="persona-item-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#5a9c7a"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>人格原型</div><div class="persona-item-value">${mbtiData.name}</div></div>
+      <div class="persona-item"><div class="persona-item-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#8a8270"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>阴影面</div><div class="persona-item-value" style="font-size:17px">${mbtiData.shadow}</div></div>
+      <div style="font-size:13px;color:var(--ink-3);margin:18px 0 10px;letter-spacing:.5px">核心特质</div><div class="trait-tags">${traitsHTML}</div>
+      <div class="quote-box"><div class="quote-mark">"</div><div class="quote-text">${stage.quote}</div><div class="quote-author">—— ${stage.name}阶·心智箴言</div></div></div>
+    <div class="r-card" style="animation-delay:.2s"><div class="r-card-head"><div class="r-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="r-card-title">心智能量图谱</div></div><div class="r-card-sub">五维心智发展指数</div><div class="gauge-grid">${gaugesHTML}</div><div class="gauge-legend"><span><span class="legend-dot" style="background:#b0a890"></span>待发展 (0-40)</span><span><span class="legend-dot" style="background:#e0a030"></span>成长中 (40-70)</span><span><span class="legend-dot" style="background:#5a9c7a"></span>已整合 (70-100)</span></div></div>
+    <div class="r-card" style="animation-delay:.3s"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><div class="r-card-head" style="margin-bottom:0"><div class="r-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div><div class="r-card-title">阶位诊断报告</div></div><span class="stage-badge">${stage.name}</span></div>
+      <div class="integration-bar"><div class="integration-label">能量整合度</div><div class="integration-track"><div class="integration-fill" id="intFill">0%</div></div><div class="integration-markers">${stageMarkers}</div></div>
+      <div class="diagnosis-item"><div class="diagnosis-item-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>当前心智状态</div><div class="diagnosis-item-text"><span class="highlight">🌱 成长阶段：</span>${stage.state}</div></div>
+      <div class="diagnosis-item" style="border-left:3px solid var(--green-2)"><div class="diagnosis-item-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>深层心理机制</div><div class="diagnosis-item-text">${stage.mechanism}</div></div></div>
+    <div class="r-card" style="animation-delay:.4s"><div class="rx-header"><div class="rx-symbol">℞</div><div class="rx-title-group"><h2>心智成长处方</h2><p>No. ${rxNo}</p></div></div>
+      <div class="rx-info"><div class="rx-info-row">人格类型 <strong>${mbti}</strong></div><div class="rx-info-divider"></div><div class="rx-info-row">当前阶位 <strong style="color:#b8860b">${stage.name}</strong></div></div>
+      <div class="rx-section"><div class="rx-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#5a9c7a"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>天赋原力（优势能量）</div><div class="rx-section-text">${mbtiData.talent}</div></div>
+      <div class="rx-section"><div class="rx-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#e0a030"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>潜在盲区（注意事项）</div><div class="rx-blindspot"><div class="rx-section-text">${mbtiData.blindspot}</div></div></div>
+      <div class="rx-section"><div class="rx-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#5a9c7a"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>进化行动清单（用法用量）</div><ul class="action-list">${actionsHTML}</ul></div>
+      <div class="rx-special"><div class="rx-special-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.743 5.743L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.586a1 1 0 0 1 .293-.707l5.964-5.964A6 6 0 1 1 21 9z"/></svg>${stage.name}阶专属处方</div><div class="rx-section-text" style="font-size:13px">💡 ${stage.special}</div></div></div>
+    <div class="r-card" style="animation-delay:.5s"><div class="r-card-head"><div class="r-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><div class="r-card-title">人生罗盘</div></div><div class="r-card-sub">天赋方向指引</div>
+      <div class="compass-section"><div class="compass-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#5a9c7a"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>天赋职业方向</div><div class="career-grid">${careersHTML}</div></div>
+      <div class="compass-section"><div class="compass-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#5a9c7a"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>灵魂伴侣契合度</div>${compatHTML}</div></div>
+    <div class="report-footer"><div class="disclaimer">本档案基于 MBTI 人格理论与 16 阶段模型生成，仅供心理探索与自我认知参考。测评结果不构成医学诊断或专业心理咨询建议。人格具有流动性，建议结合实际情况理解自身特质，如有困惑请咨询专业人士。</div>
+      <div class="footer-archive"><div class="footer-archive-item"><div class="label">档案编号</div><div class="value">SA-${archiveId}</div></div><div class="footer-divider"></div><div class="footer-archive-item"><div class="label">归档日期</div><div class="value">${dateShort}</div></div></div>
+      <div class="report-actions"><button class="report-btn report-btn-outline" onclick="shareReport()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>分享档案</button>
+      <button class="report-btn report-btn-primary" onclick="saveReport()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>保存图片</button></div>
+      <div class="powered-by">Powered by 心智测评 © 2026</div></div>`;
+
+  showPage('page-report');
+  setTimeout(()=>{
+    animateNumber(document.getElementById('heroScore'),scores.total);
+    document.querySelectorAll('.num').forEach(el=>animateNumber(el,parseInt(el.dataset.target)));
+    const fill=document.getElementById('intFill');fill.style.width=scores.total+'%';setTimeout(()=>fill.textContent=scores.total+'%',800);
+    document.querySelectorAll('.compat-fill').forEach(el=>{setTimeout(()=>el.style.width=el.dataset.width+'%',100);});
+  },200);
+}
+
+const needleStyle=document.createElement('style');
+needleStyle.textContent='@keyframes needleIn{from{transform:rotate(-90deg)}to{transform:rotate(0deg)}}';
+document.head.appendChild(needleStyle);
+
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:#fff;padding:14px 28px;border-radius:12px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._timer);t._timer=setTimeout(()=>{t.style.opacity='0';},2000);
+}
+
+function shareReport(){
+  const shareText=`我的MBTI心智阶位测评报告已生成！快来测测你的心智发展阶段吧~`;
+  const shareUrl=window.location.href;
+  if(navigator.share){
+    navigator.share({title:'我的MBTI心智阶位测评报告',text:shareText,url:shareUrl})
+      .then(()=>showToast('分享成功'))
+      .catch(()=>{});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(shareUrl).then(()=>showToast('链接已复制，快去分享给朋友吧~'))
+      .catch(()=>showToast('请截图分享给朋友~'));
+  }else{
+    showToast('请截图分享给朋友~');
+  }
+}
+
+function closeImgPreview(){document.getElementById('imgPreview').classList.remove('active');}
+
+function saveReport(){
+  showToast('正在生成高清图片...');
+  const target=document.getElementById('reportContent');
+  // 临时隐藏按钮区域
+  const actions=document.querySelector('.report-actions');
+  const powered=document.querySelector('.powered-by');
+  const origActions=actions?actions.style.display:'';
+  const origPowered=powered?powered.style.display:'';
+  if(actions)actions.style.display='none';
+  if(powered)powered.style.display='none';
+
+  setTimeout(()=>{
+    // 滚动到顶部确保完整截图
+    window.scrollTo(0,0);
+    html2canvas(target,{
+      backgroundColor:'#f5f0e5',
+      scale:2,
+      useCORS:true,
+      logging:false,
+      width:target.scrollWidth,
+      windowWidth:target.scrollWidth
+    }).then(canvas=>{
+      if(actions)actions.style.display=origActions;
+      if(powered)powered.style.display=origPowered;
+      // 显示预览弹窗
+      const imgData=canvas.toDataURL('image/png');
+      document.getElementById('previewImg').src=imgData;
+      document.getElementById('imgPreview').classList.add('active');
+    }).catch(err=>{
+      if(actions)actions.style.display=origActions;
+      if(powered)powered.style.display=origPowered;
+      console.error(err);
+      showToast('生成失败，请用手机截图功能保存');
+    });
+  },300);
+}
+</script>
+</body>
+</html>

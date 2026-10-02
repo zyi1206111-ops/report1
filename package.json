@@ -1,0 +1,16 @@
+{
+  "name": "mbti-test-system",
+  "version": "1.0.0",
+  "description": "MBTI心智阶位测评系统 - 授权码+设备绑定+自动发货",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  }
+}

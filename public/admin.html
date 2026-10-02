@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>授权码管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1e1b4b,#312e81)}
+.login-box{background:rgba(30,30,60,.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:40px;width:100%;max-width:400px}
+.login-box h1{font-size:24px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-box p{text-align:center;color:#94a3b8;font-size:14px;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px}
+.form-group input{width:100%;padding:12px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#f1f5f9;font-size:15px;outline:none;transition:all .3s}
+.form-group input:focus{border-color:#7c3aed;background:rgba(124,58,237,.1)}
+.btn{padding:12px 24px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;border:none;transition:all .3s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;width:100%}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 25px rgba(124,58,237,.4)}
+.btn-secondary{background:rgba(255,255,255,.08);color:#cbd5e1;border:1px solid rgba(255,255,255,.1)}
+.btn-secondary:hover{background:rgba(255,255,255,.12)}
+.btn-success{background:linear-gradient(135deg,#059669,#10b981);color:white}
+.btn-success:hover{transform:translateY(-1px)}
+.btn-warning{background:linear-gradient(135deg,#d97706,#f59e0b);color:white}
+.btn-danger{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-sm{padding:8px 16px;font-size:13px}
+.admin-page{display:none}
+.admin-header{background:rgba(15,23,42,.95);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.admin-header h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.admin-header h1 svg{width:24px;height:24px;color:#a78bfa}
+.header-actions{display:flex;gap:10px;align-items:center}
+.admin-content{padding:24px;max-width:1200px;margin:0 auto}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:rgba(30,41,59,.6);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:20px}
+.stat-label{font-size:13px;color:#64748b;margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:700}
+.stat-value.purple{color:#a78bfa}
+.stat-value.blue{color:#60a5fa}
+.stat-value.green{color:#34d399}
+.stat-value.yellow{color:#fbbf24}
+.stat-value.pink{color:#f472b6}
+.stat-value.red{color:#f87171}
+.panel{background:rgba(30,41,59,.6);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:24px;margin-bottom:24px}
+.panel h2{font-size:18px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.panel h2 svg{width:20px;height:20px;color:#a78bfa}
+.generate-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.generate-row .form-group{margin-bottom:0;flex:1;min-width:150px}
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+th{font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+td{font-size:14px;color:#cbd5e1}
+tr:hover{background:rgba(255,255,255,.02)}
+.code-text{font-family:'JetBrains Mono','Courier New',monospace;font-weight:600;letter-spacing:1px;color:#c4b5fd}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.badge-active{background:rgba(16,185,129,.15);color:#34d399}
+.badge-inactive{background:rgba(100,116,139,.2);color:#94a3b8}
+.badge-revoked{background:rgba(239,68,68,.15);color:#f87171}
+.pagination{display:flex;gap:8px;justify-content:center;margin-top:20px;align-items:center}
+.pagination button{padding:8px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#cbd5e1;cursor:pointer;font-size:13px}
+.pagination button:hover:not(:disabled){background:rgba(255,255,255,.1)}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+.pagination span{font-size:13px;color:#64748b}
+.search-box{position:relative;margin-bottom:16px}
+.search-box input{width:100%;padding:12px 16px 12px 42px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#f1f5f9;font-size:14px;outline:none}
+.search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#64748b}
+.filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:8px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#94a3b8;cursor:pointer;font-size:13px;transition:all .3s}
+.filter-btn.active{background:rgba(124,58,237,.2);border-color:#7c3aed;color:#c4b5fd}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:#10b981;color:white;padding:14px 28px;border-radius:12px;font-size:14px;font-weight:600;z-index:1000;transition:transform .3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:#ef4444}
+.copy-btn{background:none;border:none;color:#60a5fa;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:6px}
+.copy-btn:hover{background:rgba(96,165,250,.1)}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage" class="login-page">
+  <div class="login-box">
+    <h1>授权码管理后台</h1>
+    <p>MBTI心智阶位测评系统</p>
+    <div class="form-group">
+      <label>管理员账号</label>
+      <input type="text" id="username" placeholder="请输入账号" value="admin">
+    </div>
+    <div class="form-group">
+      <label>管理员密码</label>
+      <input type="password" id="password" placeholder="请输入密码">
+    </div>
+    <button class="btn btn-primary" onclick="login()">登录</button>
+  </div>
+</div>
+
+<!-- 管理后台 -->
+<div id="adminPage" class="admin-page">
+  <div class="admin-header">
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      授权码管理后台
+    </h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        导出CSV
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">退出登录</button>
+    </div>
+  </div>
+
+  <div class="admin-content">
+    <!-- 统计 -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- 生成授权码 -->
+    <div class="panel">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        批量生成授权码
+      </h2>
+      <div class="generate-row">
+        <div class="form-group">
+          <label>生成数量</label>
+          <input type="number" id="genCount" value="50" min="1" max="5000">
+        </div>
+        <div class="form-group">
+          <label>问卷类型</label>
+          <input type="text" id="genKey" value="mbti16stage" readonly>
+        </div>
+        <button class="btn btn-success" onclick="generateCodes()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          生成授权码
+        </button>
+      </div>
+    </div>
+
+    <!-- 授权码列表 -->
+    <div class="panel">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        授权码列表
+      </h2>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="搜索授权码..." oninput="debounceSearch()">
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="" onclick="setFilter('')">全部</button>
+        <button class="filter-btn" data-filter="can_activate" onclick="setFilter('can_activate')">未激活</button>
+        <button class="filter-btn" data-filter="activated" onclick="setFilter('activated')">已激活</button>
+        <button class="filter-btn" data-filter="revoked" onclick="setFilter('revoked')">已撤销</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>授权码</th>
+              <th>状态</th>
+              <th>设备指纹</th>
+              <th>创建时间</th>
+              <th>激活时间</th>
+              <th>使用次数</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="codeTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let adminToken = localStorage.getItem('admin_token') || '';
+let currentPage = 1;
+let pageSize = 20;
+let currentFilter = '';
+let searchTimer = null;
+
+// ============ 登录 ============
+async function login() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if (data.success) {
+      adminToken = data.token;
+      localStorage.setItem('admin_token', adminToken);
+      showAdmin();
+    } else {
+      showToast(data.message || '登录失败', 'error');
+    }
+  } catch (e) {
+    showToast('网络错误', 'error');
+  }
+}
+function logout() {
+  localStorage.removeItem('admin_token');
+  adminToken = '';
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+function showAdmin() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('adminPage').style.display = 'block';
+  loadStats();
+  loadCodes();
+}
+
+// 检查登录状态
+if (adminToken) {
+  showAdmin();
+}
+
+// ============ API请求 ============
+async function apiRequest(url, method = 'GET', body = null) {
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-token': adminToken
+    }
+  };
+  if (body) options.body = JSON.stringify(body);
+  const res = await fetch(url, options);
+  return await res.json();
+}
+
+// ============ 统计 ============
+async function loadStats() {
+  const data = await apiRequest('/api/admin/stats');
+  if (data.success) {
+    const s = data.data;
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="stat-label">授权码总数</div><div class="stat-value purple">${s.total_codes}</div></div>
+      <div class="stat-card"><div class="stat-label">已激活</div><div class="stat-value green">${s.activated}</div></div>
+      <div class="stat-card"><div class="stat-label">未激活</div><div class="stat-value blue">${s.can_activate}</div></div>
+      <div class="stat-card"><div class="stat-label">已撤销</div><div class="stat-value red">${s.revoked}</div></div>
+      <div class="stat-card"><div class="stat-label">测试总次数</div><div class="stat-value yellow">${s.total_tests}</div></div>
+      <div class="stat-card"><div class="stat-label">绑定设备数</div><div class="stat-value pink">${s.total_devices}</div></div>
+      <div class="stat-card"><div class="stat-label">今日生成</div><div class="stat-value purple">${s.today_codes}</div></div>
+      <div class="stat-card"><div class="stat-label">今日测试</div><div class="stat-value green">${s.today_tests}</div></div>
+    `;
+  }
+}
+
+// ============ 生成授权码 ============
+async function generateCodes() {
+  const count = parseInt(document.getElementById('genCount').value) || 50;
+  const key = document.getElementById('genKey').value;
+  const data = await apiRequest('/api/admin/generate', 'POST', {count, questionnaire_key: key});
+  if (data.success) {
+    showToast(`成功生成 ${data.count} 个授权码`);
+    loadStats();
+    loadCodes();
+  } else {
+    showToast(data.message || '生成失败', 'error');
+  }
+}
+
+// ============ 授权码列表 ============
+async function loadCodes() {
+  const search = document.getElementById('searchInput').value;
+  let url = `/api/admin/codes?page=${currentPage}&pageSize=${pageSize}`;
+  if (currentFilter) url += `&status=${currentFilter}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+
+  const data = await apiRequest(url);
+  if (data.success) {
+    const tbody = document.getElementById('codeTableBody');
+    tbody.innerHTML = data.data.map(code => {
+      let statusBadge = '';
+      if (code.revoked) statusBadge = '<span class="badge badge-revoked">已撤销</span>';
+      else if (code.status === 'activated') statusBadge = '<span class="badge badge-active">已激活</span>';
+      else statusBadge = '<span class="badge badge-inactive">未激活</span>';
+
+      const device = code.device_fingerprint
+        ? `<span style="font-size:12px;color:#64748b;font-family:monospace;">${code.device_fingerprint.substring(0, 20)}...</span>`
+        : '<span style="color:#475569;">未绑定</span>';
+
+      return `
+        <tr>
+          <td>
+            <span class="code-text">${code.code}</span>
+            <button class="copy-btn" onclick="copyCode('${code.code}')">复制</button>
+          </td>
+          <td>${statusBadge}</td>
+          <td>${device}</td>
+          <td style="font-size:12px;color:#64748b;">${code.created_at ? code.created_at.replace('T', ' ').substring(0, 16) : '-'}</td>
+          <td style="font-size:12px;color:#64748b;">${code.activated_at ? code.activated_at.replace('T', ' ').substring(0, 16) : '-'}</td>
+          <td>${code.use_count}</td>
+          <td>
+            ${!code.revoked ? `<button class="btn btn-danger btn-sm" onclick="revokeCode(${code.id})">撤销</button>` : '-'}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // 分页
+    const totalPages = Math.ceil(data.total / pageSize);
+    document.getElementById('pagination').innerHTML = `
+      <button onclick="changePage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>上一页</button>
+      <span>第 ${currentPage} / ${totalPages} 页（共 ${data.total} 条）</span>
+      <button onclick="changePage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>下一页</button>
+    `;
+  }
+}
+
+function changePage(page) {
+  currentPage = page;
+  loadCodes();
+}
+function setFilter(filter) {
+  currentFilter = filter;
+  currentPage = 1;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === filter);
+  });
+  loadCodes();
+}
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage = 1;
+    loadCodes();
+  }, 300);
+}
+async function revokeCode(id) {
+  if (!confirm('确定要撤销这个授权码吗？撤销后用户将无法使用。')) return;
+  const data = await apiRequest(`/api/admin/codes/${id}/revoke`, 'PUT');
+  if (data.success) {
+    showToast('授权码已撤销');
+    loadStats();
+    loadCodes();
+  }
+}
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => showToast('已复制: ' + code));
+}
+function exportCSV() {
+  let url = '/api/admin/export';
+  if (currentFilter) url += `?status=${currentFilter}`;
+  url += (url.includes('?') ? '&' : '?') + 'token=' + adminToken;
+  window.open(url, '_blank');
+}
+
+// ============ Toast ============
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show' + (type === 'error' ? ' error' : '');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// 回车键登录
+document.getElementById('password').addEventListener('keypress', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
